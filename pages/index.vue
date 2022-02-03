@@ -194,8 +194,8 @@ import dayjs from "dayjs";
       isActive(sold, ticketType){
         if(ticketType === 'A') return sold !== 10;
         else if(ticketType === 'B') return sold !== 20 && sold < 20;
-        else if(ticketType === 'C') return sold !== 30;
-        else if(ticketType === 'D') return sold !== 40;
+        else if(ticketType === 'C') return sold !== 30 && sold < 30;
+        else if(ticketType === 'D') return sold !== 40 && sold < 40;
         return false;
       },
       buyItem(item){
