@@ -1,7 +1,7 @@
 <template>
 <v-container class="d-flex justify-center">
   <div style="width: 75%;">
-    <p class="font-weight-bold body-1">Ticket status Lists</p>
+      <p class="font-weight-bold body-1">Ticket status Lists</p>
     <v-row>
        <v-col>
           <v-menu
@@ -96,13 +96,24 @@
         </div>
       </template>
       <template v-slot:[`item.status`]="{ item }">
-        <v-chip
-          class="ma-2"
-          :color="isActive(item.sold, item.ticketType) ? 'primary': 'red'"
-          text-color="white"
+          <v-badge
+            dot
+            inline
+            left
+            :color="isActive(item.sold, item.ticketType) ? 'primary': 'red'"
+          >
+            {{ isActive(item.sold, item.ticketType) ? 'Active': 'In Active' }}
+          </v-badge>
+      </template>
+      <template v-slot:item.actions="{ item }">
+        <v-btn
+          color="primary"
+          small
+          @click="buyItem(item)"
+          :disabled="!isActive(item.sold, item.ticketType)"
         >
-          {{ isActive(item.sold, item.ticketType) ? 'Active': 'In Active' }}
-        </v-chip>
+          Buy ticket
+        </v-btn>
       </template>
     </v-data-table>
   </div>
@@ -132,9 +143,11 @@ import dayjs from "dayjs";
             value: 'ticketType',
           },
           { text: 'Price', value: 'price', sortable: false, align: 'right' },
+          { text: 'Minimum Buying', value: 'minimumBuying', sortable: false, align: 'center' },
           { text: 'Sold / Limit Per Day', value: 'sold', align: 'center' },
-          { text: 'Status', value: 'status', align: 'center' },
-          { text: 'Date', value: 'date', align: 'center' },
+          { text: 'Status', value: 'status', align: 'left' },
+          { text: 'Actions', value: 'actions', sortable: false, align: 'center' },
+          // { text: 'Date', value: 'date', align: 'center' },
         ],
         tickets: [],
         // constTicket: JSON.parse(JSON.stringify(this.getTicket)),
@@ -150,8 +163,8 @@ import dayjs from "dayjs";
       this.FilTER_TICKET({date: dayjs().format('DD-MM-YYYY')});
       this.tickets = this.$store.state.ticketData;
     },
-     methods: {
-       ...mapMutations(["FilTER_TICKET"]),
+    methods: {
+       ...mapMutations(["FilTER_TICKET", "UPDATE_TICKET"]),
        filterTicket(clearDate = false, clearType = false, clearActive = false){
          const parseDate = dayjs(this.date).format('DD-MM-YYYY')
          this.FilTER_TICKET(
@@ -180,11 +193,23 @@ import dayjs from "dayjs";
       },
       isActive(sold, ticketType){
         if(ticketType === 'A') return sold !== 10;
-        else if(ticketType === 'B') return sold !== 20;
+        else if(ticketType === 'B') return sold !== 20 && sold < 20;
         else if(ticketType === 'C') return sold !== 30;
         else if(ticketType === 'D') return sold !== 40;
         return false;
-      }
+      },
+      buyItem(item){
+        let quantity = 1;
+        if(item.ticketType === 'B' || item.ticketType === 'C' ){
+          quantity = 2
+        }else if(item.ticketType === 'D'){
+          quantity = 3
+        }
+        this.UPDATE_TICKET({data: item ,quantity})
+        this.tickets = this.$store.state.constTicketData;
+        this.filterTicket();
+        // console.log(this.$store.state.constTicketData)
+      },
     },
   }
 </script>
